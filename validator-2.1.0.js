@@ -36,24 +36,25 @@
    * @return {validator}
    */
   constructor(config) {
-    let rules = config;
-    if(Validator.isObject(config)) {
-      rules = config.rules;
-      const { transform, messageHook  } = config;
-      if(transform && !Validator.isObject(transform)) {
-        throw new Error('transform must be an object');
-      }
-      if(messageHook && !Validator.isFunction(messageHook)) {
-        throw new Error('messageHook must be an function');
-      }
-      this._transform = transform;
-      this._messageHook = messageHook;
+    if(!Validator.isObject(config)) {
+      throw new Error('config must be an object');
     }
-    
+
+    const { rules, transform, messageHook  } = config;
+
     if (!Validator.isObject(rules)) {
       throw new Error('rules must be an object');
     }
+    if(transform && !Validator.isObject(transform)) {
+      throw new Error('transform must be an object');
+    }
+    if(messageHook && !Validator.isFunction(messageHook)) {
+      throw new Error('messageHook must be an function');
+    }
 
+    this._transform = transform;
+    this._messageHook = messageHook;
+    
     Object.keys(rules).forEach(field => {
       const item = rules[field];
       // 格式统一

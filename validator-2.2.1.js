@@ -3,7 +3,7 @@
   * @Date: 2022-03-05 22:08:07
   * @LastEditors: LiYu
   * @LastEditTime: 2022-03-16 22:15:49
-  * @Description: 表单校验类，message配置可为函数，供Validator调用
+  * @Description: 表单校验类，validateField可控是否字段包裹
   */
  class Validator {
   static pattern = Object.freeze({
@@ -74,7 +74,7 @@
 
     const { _rules } = this;
 
-    const tasks = Object.keys(_rules).map(field => this.validateField(field, form));
+    const tasks = Object.keys(_rules).map(field => this.validateField(field, form, true));
 
     return new Promise(async (resolve, reject) => {
       const validateResult = await Promise.allSettled(tasks);
@@ -96,14 +96,15 @@
    * @description: 校验指定字段
    * @param {String} field 要校验的字段
    * @param {Object} form 被校验的表单
+   * @param {Boolean} fieldWrap 是否包含字段
    * @return {Promise}
    */
-  validateField(field, form) {
+  validateField(field, form, fieldWrap = false) {
     if(!Validator.isObject(form)) {
       throw new Error('Form parameter is not an object');
     }
 
-    const { _rules, _transform } = this;
+    const { _rules, _transform = {} } = this;
     
     // 如果规则中不存在，则认定为校验通过
     if(!_rules[field]) return Promise.resolve();
@@ -121,7 +122,7 @@
           this._validateMaxlen,
           this._validateMinlen,
           this._validateEnum,
-          this._customValidate,
+          this._customValidate
         ]
 
         for(const validator of chain) {
@@ -140,13 +141,11 @@
             } else if(this._messageHook) {
               this._messageHook(message);
             }
-            return reject({ 
-              field, 
-              rule: {
-                ...rule,
-                message
-              }
-            });
+            const finalRule = { ...rule, message };
+            if(fieldWrap) {
+              return reject({ field, rule: finalRule });
+            }
+            return reject(rule);
           }
         }
       }
