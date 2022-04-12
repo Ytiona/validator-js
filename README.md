@@ -2,7 +2,7 @@
 > 一个校验表单的工具类；支持必填限制、类型校验、自定义正则、自定义校验函数等、message钩子、值前置转换配置；封装了一系列基础的格式校验函数。
 
 ### 基本使用：
-```
+``` js
 const rules = {
   // 一个基础的必填校验配置，必填（非：''\null\undefined）
   name: { required: true, messge: '请填写名称' },
@@ -33,7 +33,7 @@ validator.validate({
 
 ***
 ### 指定字段校验
-```
+``` js
 const rules = {
   name: { required: true, messge: '请填写名称' },
 }
@@ -58,7 +58,7 @@ validator.validateField('name', form).then(() => {
 ***
 
 ### 其他校验
-```
+``` js
 const rules = {
   name: { required: true, messge: '请填写名称' },
   phone: [
@@ -111,7 +111,7 @@ const rules = {
 
 
 ### 一个配置对象中叠加多个校验方式
-```
+``` js
 const rules = {
   phone: [
     { required: true, message: '请填写手机号码' },
@@ -126,7 +126,7 @@ const rules = {
 ***
 
 ### 异步validator及自定义错误信息
-```
+``` js
 const SUCCESS_CODE = 0;
 
 const rules = {
@@ -176,7 +176,7 @@ function loginRequest({
 ```
 
 #### 对于同步的validator自定义错误信息
-```
+``` js
 const rules = {
   password: [
     { required: true, message: '请输入密码' },
@@ -200,7 +200,7 @@ const rules = {
 
 
 ### transform，校验值的前置处理
-```
+``` js
 const rules = {
   name: [
     { required: true, message: '请填写姓名' },
@@ -237,7 +237,7 @@ validator.validate({
 ***
 
 ### message钩子
-```
+``` js
 const rules = {
   name: { required: true, message: '请输入姓名' }
 }
@@ -265,7 +265,7 @@ validator.validate({
 */
 ```
 #### 指定字段配置message钩子
-```
+``` js
 const rules = {
   name: { 
     required: true, 
