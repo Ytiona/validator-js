@@ -14,3 +14,4 @@
 1.https://github.com/yiminghe/async-validator;
 
 2.《JavaScript设计模式与开发实践》;
+

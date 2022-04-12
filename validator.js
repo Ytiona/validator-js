@@ -3,10 +3,10 @@
   * @Date: 2022-03-05 22:08:07
   * @LastEditors: LiYu
   * @LastEditTime: 2022-03-16 22:15:49
-  * @Description: 表单校验类，职责链设计模式优化
+  * @Description: 表单校验类，validateField可控是否字段包裹
   */
  class Validator {
-  static pattern = {
+  static pattern = Object.freeze({
     // Email地址
     email: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
     // 手机号码
@@ -23,21 +23,38 @@
     ip: /((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}/,
     // 中国邮政编码
     postalCode: /[1-9]\d{5}(?!\d)/
-  };
+  });
 
-  // type取值
-  static types = ['string', 'number', 'boolean', 'function', 'float', 'integer', 'array', 'object', 'date', 'regexp'];
+  // rules中的type取值
+  static types = Object.freeze(['string', 'number', 'boolean', 'function', 'float', 'integer', 'array', 'object', 'date', 'regexp']);
 
   _rules = {};
 
   /**
    * @param {Object} rules 必填 校验规则
+   * @param {Object} transform 选填 字段值的转换配置
    * @return {validator}
    */
-  constructor(rules) {
-    if (!Validator.isObject(rules)) {
-      throw new Error('Rules must be an object');
+  constructor(config) {
+    if(!Validator.isObject(config)) {
+      throw new Error('config must be an object');
     }
+
+    const { rules, transform, messageHook  } = config;
+
+    if (!Validator.isObject(rules)) {
+      throw new Error('rules must be an object');
+    }
+    if(transform && !Validator.isObject(transform)) {
+      throw new Error('transform must be an object');
+    }
+    if(messageHook && !Validator.isFunction(messageHook)) {
+      throw new Error('messageHook must be an function');
+    }
+
+    this._transform = transform;
+    this._messageHook = messageHook;
+    
     Object.keys(rules).forEach(field => {
       const item = rules[field];
       // 格式统一
@@ -57,7 +74,7 @@
 
     const { _rules } = this;
 
-    const tasks = Object.keys(_rules).map(field => this.validateField(field, form));
+    const tasks = Object.keys(_rules).map(field => this.validateField(field, form, true));
 
     return new Promise(async (resolve, reject) => {
       const validateResult = await Promise.allSettled(tasks);
@@ -79,50 +96,63 @@
    * @description: 校验指定字段
    * @param {String} field 要校验的字段
    * @param {Object} form 被校验的表单
+   * @param {Boolean} fieldWrap 是否包含字段
    * @return {Promise}
    */
-  validateField(field, form) {
+  validateField(field, form, fieldWrap = false) {
     if(!Validator.isObject(form)) {
       throw new Error('Form parameter is not an object');
     }
 
-    const { _rules } = this;
+    const { _rules, _transform = {} } = this;
     
     // 如果规则中不存在，则认定为校验通过
     if(!_rules[field]) return Promise.resolve();
 
     return new Promise(async (resolve, reject) => {
       const currentRules = _rules[field];
-
+      const currentTransform = _transform[field] || (value => value);
+      
       for(const rule of currentRules) {
 
+        // 创建职责链
         const chain = [
           this._validateRequired,
           this._validateType,
           this._validatePattern,
-          this._customValidate,
           this._validateMaxlen,
           this._validateMinlen,
-          this._validateEnum
+          this._validateEnum,
+          this._customValidate
         ]
 
+        // 执行职责链
         for(const validator of chain) {
-          const validateRes = await validator(rule, form[field], field);
+          const validateRes = await validator(rule, currentTransform(form[field]), field);
           let errMsg;
           let pass = validateRes;
+          // 返回类型兼容自定义message
           if(typeof(validateRes) === 'object') {
             pass = validateRes.pass;
             errMsg = validateRes.message;
           }
-          // 如果有一个校验不通过，则中断循环（职责链）
+          // 校验不通过
           if(!pass) {
-            return reject({ 
-              field, 
-              rule: {
-                ...rule,
-                message: errMsg || rule.message
-              }
-            });
+            const message = errMsg || rule.message;
+            // message配置为函数，执行
+            if(Validator.isFunction(message)) {
+              message();
+            } else if(this._messageHook) {
+              // 存在全局的messageHook
+              this._messageHook(message);
+            }
+            const finalRule = { ...rule, message };
+            if(fieldWrap) {
+              // 中断职责链，返回包含字段名的校验结果
+              return reject({ field, rule: finalRule });
+            }
+            // 中断职责链
+            return reject(finalRule);
           }
         }
       }
