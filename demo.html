@@ -1,0 +1,179 @@
+<script src="./validator-1.1.0.js"></script>
+
+
+<script>
+
+  /*
+    1.required,
+    2.type,
+    3.pattern,
+    4.validator,
+    5.兼容对象或数组配置,
+    6.validator自定义错误信息,
+    
+    7.maxlength,
+    8.minlength
+    9.message函数，区分单个规则和全局配置
+    10.transform，
+    11.enum
+  */
+
+  const SUCCESS_CODE = 0;
+
+  const rules = {
+    // 一个字段单个规则配置
+    name: { 
+      // 必填校验（非空校验，''/null/undefined都被认定为空）
+      required: true, 
+      message: '请填写名称'
+    },
+    // 一个字段多个规则配置
+    gender: [
+      { 
+        required: true, 
+        message: '请填写性别' 
+      },
+      {
+        enum: ['男', '女'],
+        message: '性别只能为男、女'
+      },
+      { 
+        // 自定义校验
+        validator: value => Validator.oneOf(value, ['男', '女', '保密']), 
+        message: '性别必须为男、女或保密' 
+      }
+    ],
+    phone: [
+      { 
+        required: true, 
+        message: '请填写手机号码' 
+      },
+      { 
+        // type 和 pattern叠加使用
+        // 例：校验手机号，且类型必须为字符串
+        type: 'string',
+        // 自定义正则校验
+        pattern: Validator.pattern.phone, 
+        message: '请填写有效的手机号码' 
+      }
+    ],
+    age: { 
+      // 使用Validator内部类型校验
+      type: 'integer', 
+      // 此处仅做示例，年龄应该为正整数
+      message: '年龄必须为整数' 
+    },
+    account: [
+      { 
+        required: true, 
+        message: '请填写账号' 
+      },
+      {
+        minlength: 6,
+        message: '最小6位'
+      },
+      {
+        maxlength: 10,
+        message: '最大10位'
+      },
+      {
+        // 自定义validator、自定义message
+        validator: value => {
+          if(typeof value !== 'string') return false;
+          return true;
+        },
+        message: '账号填写错误'
+      }
+    ],
+    password: [
+      { 
+        required: true, 
+        message: '请输入密码' 
+      },
+      {
+        validator: value => value?.length >= 6,
+        message: '密码长度最少6位'
+      },
+      {
+        // 异步校验，通过reject自定义错误信息
+        validator: value => {
+          return new Promise((resolve, reject) => {
+            // 模拟登录请求
+            loginRequest({
+              account: 'liyu',
+              password: value
+            }).then(res => {
+              if(res.code === SUCCESS_CODE) {
+                return resolve();
+              }
+              return reject(res.message || '未知错误');
+            })
+          })
+        }
+      }
+    ]
+  }
+
+  const transform = {
+    name: value => value.trim()
+  }
+
+  const form = {
+    // name: true,
+    gender: '保密',
+    phone: 15675458207,
+    age: 1,
+    account: '12345678901',
+    password: '123456',
+  }
+
+  const validator = new Validator(rules);
+
+  // 模拟请求
+  function loginRequest({
+    account,
+    password
+  } = {}) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        if(password === '123456') {
+          return resolve({
+            code: SUCCESS_CODE,
+            message: '密码正确'
+          })
+        }
+        return resolve({
+          code: 1,
+          message: '密码错误'
+        })
+      }, 200)
+    })
+  }
+
+  validator.validate(form).then(() => {
+    console.log('validate success');
+  }).catch(errs => {
+    console.log('validate fail');
+    console.log(errs);
+    Object.keys(form).forEach(key => {
+      console.log(key, errs[key]);
+    })
+  })
+
+  // Object.keys(form).forEach(key => {
+  //   validator.validateField(key, form).then(() => {
+  //     console.log('validate success');
+  //   }).catch(err => {
+  //     console.log(`validate ${key} fail`);
+  //     console.log(err);
+  //   })
+  // })
+
+  // validator.validateField('age', form).then(() => {
+  //   console.log('validate success');
+  // }).catch(err => {
+  //   console.log(`validate ${'age'} fail`);
+  //   console.log(err);
+  // })
+
+</script>
