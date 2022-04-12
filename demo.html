@@ -1,4 +1,4 @@
-<script src="./validator-2.1.0.js"></script>
+<script src="./validator-2.2.0.js"></script>
 
 
 <script>
@@ -25,7 +25,9 @@
     name: { 
       // 必填校验（非空校验，''/null/undefined都被认定为空）
       required: true, 
-      message: '请填写名称'
+      message: () => {
+        alert('请输入名称');
+      }
     },
     // 一个字段多个规则配置
     gender: [
@@ -119,7 +121,7 @@
   }
 
   const form = {
-    name: '123456',
+    name: '',
     gender: '保密',
     phone: 15675458207,
     age: 1,
