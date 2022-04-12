@@ -3,7 +3,7 @@
   * @Date: 2022-03-05 22:08:07
   * @LastEditors: LiYu
   * @LastEditTime: 2022-03-16 22:15:49
-  * @Description: 表单校验类
+  * @Description: 表单校验类，职责链设计模式优化
   */
  class Validator {
   static pattern = {

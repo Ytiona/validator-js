@@ -3,7 +3,7 @@
   * @Date: 2022-03-05 22:08:07
   * @LastEditors: LiYu
   * @LastEditTime: 2022-03-16 22:15:49
-  * @Description: 表单校验类
+  * @Description: 表单校验类，constructor增加transform配置
   */
  class Validator {
   static pattern = {
@@ -39,15 +39,11 @@
     let rules = config;
     if(Validator.isObject(config)) {
       rules = config.rules;
-      const { transform, messageHook  } = config;
+      const { transform  } = config;
       if(transform && !Validator.isObject(transform)) {
         throw new Error('transform must be an object');
       }
-      if(messageHook && !Validator.isFunction(messageHook)) {
-        throw new Error('messageHook must be an function');
-      }
       this._transform = transform;
-      this._messageHook = messageHook;
     }
     
     if (!Validator.isObject(rules)) {

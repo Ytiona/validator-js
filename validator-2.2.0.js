@@ -3,10 +3,10 @@
   * @Date: 2022-03-05 22:08:07
   * @LastEditors: LiYu
   * @LastEditTime: 2022-03-16 22:15:49
-  * @Description: 表单校验类
+  * @Description: 表单校验类，message配置可为函数，供Validator调用
   */
  class Validator {
-  static pattern = {
+  static pattern = Object.freeze({
     // Email地址
     email: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
     // 手机号码
@@ -23,10 +23,10 @@
     ip: /((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})(\.((2(5[0-5]|[0-4]\d))|[0-1]?\d{1,2})){3}/,
     // 中国邮政编码
     postalCode: /[1-9]\d{5}(?!\d)/
-  };
+  });
 
-  // type取值
-  static types = ['string', 'number', 'boolean', 'function', 'float', 'integer', 'array', 'object', 'date', 'regexp'];
+  // rules中的type取值
+  static types = Object.freeze(['string', 'number', 'boolean', 'function', 'float', 'integer', 'array', 'object', 'date', 'regexp']);
 
   _rules = {};
 

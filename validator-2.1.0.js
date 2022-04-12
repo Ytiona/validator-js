@@ -3,7 +3,7 @@
   * @Date: 2022-03-05 22:08:07
   * @LastEditors: LiYu
   * @LastEditTime: 2022-03-16 22:15:49
-  * @Description: 表单校验类
+  * @Description: 表单校验类，constructor增加messageHooke配置
   */
  class Validator {
   static pattern = {
