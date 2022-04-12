@@ -1,4 +1,4 @@
-<script src="./validator-1.1.0.js"></script>
+<script src="./validator-2.0.0.js"></script>
 
 
 <script>
@@ -119,7 +119,7 @@
   }
 
   const form = {
-    // name: true,
+    name: '123456',
     gender: '保密',
     phone: 15675458207,
     age: 1,
@@ -127,7 +127,12 @@
     password: '123456',
   }
 
-  const validator = new Validator(rules);
+  const validator = new Validator({
+    rules,
+    transform: {
+      name: value => value.trim()
+    }
+  });
 
   // 模拟请求
   function loginRequest({
