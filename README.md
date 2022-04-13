@@ -290,3 +290,18 @@ validator.validate({
   *  请输入姓名
 */
 ```
+
+
+### 关于 rules 的详细配置：
+> 格式或被md识别为表格列间隔符了，所以用/代替
+
+| 属性    | 说明                                                                                           | 类型                                              |
+| --------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| required  | 是否必填                                                                                     | Boolean                                             |
+| type      | 类型校验，可设置：string/number/boolean/function/float/integer/array/object/date/regexp                     | String                                                |
+| pattern   | 正则校验                                                                                     | Regexp                                              |
+| validator | 自定义校验函数，支持异步，返回一个Promise实例；可以通过Promise.reject()或抛出错误来自定义message | () => Boolean/Promise<undefined/string>/never |
+| maxlength | 最大长度                                                                                     | Number                                              |
+| minlength | 最小长度                                                                                     | Number                                              |
+| enum      | 枚举                                                                                           | Array                                               |
+| message   | 错误信息，如果是函数，则会被当成钩子被执行                                  | String/Function                                     |
