@@ -5,7 +5,7 @@
   * @LastEditTime: 2022-03-16 22:15:49
   * @Description: 表单校验类，validateField可控是否字段包裹
   */
- class Validator {
+class Validator {
   static pattern = Object.freeze({
     // Email地址
     email: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
@@ -36,25 +36,25 @@
    * @return {validator}
    */
   constructor(config) {
-    if(!Validator.isObject(config)) {
+    if (!Validator.isObject(config)) {
       throw new Error('config must be an object');
     }
 
-    const { rules, transform, messageHook  } = config;
+    const { rules, transform, messageHook } = config;
 
     if (!Validator.isObject(rules)) {
       throw new Error('rules must be an object');
     }
-    if(transform && !Validator.isObject(transform)) {
+    if (transform && !Validator.isObject(transform)) {
       throw new Error('transform must be an object');
     }
-    if(messageHook && !Validator.isFunction(messageHook)) {
+    if (messageHook && !Validator.isFunction(messageHook)) {
       throw new Error('messageHook must be an function');
     }
 
     this._transform = transform;
     this._messageHook = messageHook;
-    
+
     Object.keys(rules).forEach(field => {
       const item = rules[field];
       // 格式统一
@@ -68,7 +68,7 @@
    * @return {Promise}
    */
   validate(form) {
-    if(!Validator.isObject(form)) {
+    if (!Validator.isObject(form)) {
       throw new Error('Form parameter is not an object');
     }
 
@@ -100,20 +100,20 @@
    * @return {Promise}
    */
   validateField(field, form, fieldWrap = false) {
-    if(!Validator.isObject(form)) {
+    if (!Validator.isObject(form)) {
       throw new Error('Form parameter is not an object');
     }
 
     const { _rules, _transform = {} } = this;
-    
+
     // 如果规则中不存在，则认定为校验通过
-    if(!_rules[field]) return Promise.resolve();
+    if (!_rules[field]) return Promise.resolve();
 
     return new Promise(async (resolve, reject) => {
       const currentRules = _rules[field];
       const currentTransform = _transform[field] || (value => value);
-      
-      for(const rule of currentRules) {
+
+      for (const rule of currentRules) {
 
         // 创建职责链
         const chain = [
@@ -127,27 +127,27 @@
         ]
 
         // 执行职责链
-        for(const validator of chain) {
+        for (const validator of chain) {
           const validateRes = await validator(rule, currentTransform(form[field]), field);
           let errMsg;
           let pass = validateRes;
           // 返回类型兼容自定义message
-          if(typeof(validateRes) === 'object') {
+          if (typeof (validateRes) === 'object') {
             pass = validateRes.pass;
             errMsg = validateRes.message;
           }
           // 校验不通过
-          if(!pass) {
+          if (!pass) {
             const message = errMsg || rule.message;
             // message配置为函数，执行
-            if(Validator.isFunction(message)) {
+            if (Validator.isFunction(message)) {
               message();
-            } else if(this._messageHook) {
+            } else if (this._messageHook) {
               // 存在全局的messageHook
               this._messageHook(message);
             }
             const finalRule = { ...rule, message };
-            if(fieldWrap) {
+            if (fieldWrap) {
               // 中断职责链，返回包含字段名的校验结果
               return reject({ field, rule: finalRule });
             }
@@ -162,8 +162,8 @@
 
   // 必填校验
   _validateRequired(rule, value) {
-    if(rule.required) {
-      if(Validator.isEmpty(value)) {
+    if (rule.required) {
+      if (Validator.isEmpty(value)) {
         return false;
       }
     }
@@ -173,12 +173,12 @@
   // 类型校验
   _validateType(rule, value, field) {
     const { type } = rule;
-    if(type) {
+    if (type) {
       const { oneOf, capitalize } = Validator;
       // 有效的type，添加对应的类型校验
-      if(oneOf(type, Validator.types)) {
+      if (oneOf(type, Validator.types)) {
         // 使用Validator类上静态方法，类型校验
-        if(!Validator[`is${capitalize(type)}`](value)) {
+        if (!Validator[`is${capitalize(type)}`](value)) {
           return false;
         }
       } else {
@@ -191,10 +191,10 @@
   // 正则校验
   _validatePattern(rule, value, field) {
     const { pattern } = rule;
-    if(pattern) {
+    if (pattern) {
       // 有效的正则，添加正则校验
-      if(Validator.isRegexp(pattern)) {
-        if(!pattern.test(value)) {
+      if (Validator.isRegexp(pattern)) {
+        if (!pattern.test(value)) {
           return false;
         }
       } else {
@@ -207,15 +207,15 @@
   // 自定义校验
   async _customValidate(rule, value, field) {
     const { validator } = rule;
-    if(validator) {
+    if (validator) {
       // 自定义校验
-      if(Validator.isFunction(validator)) {
+      if (Validator.isFunction(validator)) {
         try {
           const validRes = validator(value);
-          if(validRes instanceof Promise) {
+          if (validRes instanceof Promise) {
             // 如果validRes是promise.reject则会被下面catch捕获
             await validRes;
-          } else if(!validRes) {
+          } else if (!validRes) {
             // 自定义非异步validator校验不通过
             return false;
           }
@@ -223,7 +223,7 @@
           // 捕获自定义validator中的异常和Promise.reject
           let errMsg = err;
           // 取error对象中的message或reject对象中的message
-          if(typeof(err) === 'object') {
+          if (typeof (err) === 'object') {
             errMsg = err.message;
           }
           return {
@@ -241,8 +241,8 @@
   // 最大长度校验
   _validateMaxlen(rule, value, field) {
     const { maxlength } = rule;
-    if(maxlength) {
-      if(Validator.isInteger(maxlength) && maxlength > 0) {
+    if (maxlength) {
+      if (Validator.isInteger(maxlength) && maxlength > 0) {
         return value.length <= maxlength;
       }
       console.warn(`There is a maxLength in the field ${field} that is not a positive integer type`)
@@ -253,8 +253,8 @@
   // 最小长度校验
   _validateMinlen(rule, value, field) {
     const { minlength } = rule;
-    if(minlength) {
-      if(Validator.isInteger(minlength) && minlength > 0) {
+    if (minlength) {
+      if (Validator.isInteger(minlength) && minlength > 0) {
         return value.length >= minlength;
       }
       console.warn(`There is a minlength in the field ${field} that is not a positive integer type`)
@@ -265,8 +265,8 @@
   // 枚举校验
   _validateEnum(rule, value, field) {
     const { enum: list } = rule;
-    if(list) {
-      if(Validator.isArray(list)) {
+    if (list) {
+      if (Validator.isArray(list)) {
         return Validator.oneOf(value, list);
       }
       console.warn(`There is a minlength in the field ${field} that is not a positive array type`)
@@ -293,7 +293,7 @@
    * @return {Boolean}
    */
   static oneOf(value, validList) {
-    if(!Validator.isArray(validList)) {
+    if (!Validator.isArray(validList)) {
       throw new Error('validList must be of array type');
     }
     for (let i = 0; i < validList.length; i++) {
