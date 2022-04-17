@@ -172,6 +172,7 @@ class Validator {
 
   // 类型校验
   _validateType(rule, value, field) {
+    if(Validator.isEmpty(value)) return true;
     const { type } = rule;
     if (type) {
       const { oneOf, capitalize } = Validator;
@@ -190,6 +191,7 @@ class Validator {
 
   // 正则校验
   _validatePattern(rule, value, field) {
+    if(Validator.isEmpty(value)) return true;
     const { pattern } = rule;
     if (pattern) {
       // 有效的正则，添加正则校验
@@ -206,6 +208,7 @@ class Validator {
 
   // 自定义校验
   async _customValidate(rule, value, field) {
+    if(Validator.isEmpty(value)) return true;
     const { validator } = rule;
     if (validator) {
       // 自定义校验
@@ -240,6 +243,7 @@ class Validator {
 
   // 最大长度校验
   _validateMaxlen(rule, value, field) {
+    if(Validator.isEmpty(value)) return true;
     const { maxlength } = rule;
     if (maxlength) {
       if (Validator.isInteger(maxlength) && maxlength > 0) {
@@ -252,6 +256,7 @@ class Validator {
 
   // 最小长度校验
   _validateMinlen(rule, value, field) {
+    if(Validator.isEmpty(value)) return true;
     const { minlength } = rule;
     if (minlength) {
       if (Validator.isInteger(minlength) && minlength > 0) {
@@ -264,6 +269,7 @@ class Validator {
 
   // 枚举校验
   _validateEnum(rule, value, field) {
+    if(Validator.isEmpty(value)) return true;
     const { enum: list } = rule;
     if (list) {
       if (Validator.isArray(list)) {
