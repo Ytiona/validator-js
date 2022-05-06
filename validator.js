@@ -163,9 +163,7 @@ class Validator {
   // 必填校验
   _validateRequired(rule, value) {
     if (rule.required) {
-      if (Validator.isEmpty(value)) {
-        return false;
-      }
+      return !Validator.isEmpty(value);
     }
     return true;
   }
@@ -179,9 +177,7 @@ class Validator {
       // 有效的type，添加对应的类型校验
       if (oneOf(type, Validator.types)) {
         // 使用Validator类上静态方法，类型校验
-        if (!Validator[`is${capitalize(type)}`](value)) {
-          return false;
-        }
+        return Validator[`is${capitalize(type)}`](value);
       } else {
         console.warn(`There is a type in field ${field} that is unsupported`);
       }
@@ -196,9 +192,7 @@ class Validator {
     if (pattern) {
       // 有效的正则，添加正则校验
       if (Validator.isRegexp(pattern)) {
-        if (!pattern.test(value)) {
-          return false;
-        }
+        return pattern.test(value);
       } else {
         console.warn(`There is a pattern in field ${field} that is not of type regexp`);
       }
@@ -302,7 +296,7 @@ class Validator {
     if (!Validator.isArray(validList)) {
       throw new Error('validList must be of array type');
     }
-    for (let i = 0; i < validList.length; i++) {
+    for (let i = 0, len = validList.length; i < len; i++) {
       if (value === validList[i]) {
         return true;
       }
