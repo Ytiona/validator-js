@@ -3,7 +3,7 @@
   * @Date: 2022-03-05 22:08:07
   * @LastEditors: LiYu
   * @LastEditTime: 2022-03-16 22:15:49
-  * @Description: 表单校验类，validateField可控是否字段包裹
+  * @Description: 表单校验类
   */
 class Validator {
   static pattern = Object.freeze({
@@ -382,7 +382,7 @@ class Validator {
    * @return {Boolean}
    */
   static isFloat(value) {
-    return Validator.isNumber(value) && !Validator.isTnteger(value);
+    return Validator.isNumber(value) && !Validator.isInteger(value);
   }
 
   /**
